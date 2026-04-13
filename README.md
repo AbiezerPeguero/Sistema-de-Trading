@@ -15,6 +15,8 @@ Decoradores para medir tiempo de ejecución y loguear operaciones
 Módulo csv para lectura de datos históricos
 
 Estructura del proyecto.
+
+```
 backtesting/
 ├── data/
 │ └── precios.csv
@@ -25,6 +27,7 @@ backtesting/
 │ ├── reporte.py
 │ └── decoradores.py
 └── main.py
+```
 
 Cómo ejecutarlo.
 Clona el repositorio
