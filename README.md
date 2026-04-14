@@ -110,6 +110,7 @@ No requiere librerías externas. Solo Python 3.
 
 ## 📊 Ejemplo de salida
 
+```
 La funcion tardó 0.0 segundos
 La operacion comenzo
 Historial de operaciones:
@@ -122,6 +123,7 @@ Operaciones realizadas: 9
 Operaciones ganadoras: 0
 Win rate: 0.00%
 La operacion finalizo
+```
 
 ---
 
