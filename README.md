@@ -81,6 +81,7 @@ se encapsuló en decoradores reutilizables que se aplican con una sola línea.
 
 ## 🗂️ Estructura del proyecto
 
+```
 backtesting/
 ├── data/
 │ └── precios.csv # Datos históricos de precios
@@ -91,6 +92,7 @@ backtesting/
 │ ├── reporte.py # Generación de métricas
 │ └── decoradores.py # Logging y medición de tiempo
 └── main.py # Punto de entrada del sistema
+```
 
 ---
 
