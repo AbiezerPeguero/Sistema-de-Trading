@@ -1,5 +1,5 @@
 """Responsabilidad única: Recibir datos y una estrategia, simular las operaciones y registrar cada resultado."""
-from SRC import decoradores
+from src import decoradores
 
 class Backtester:
     def __init__(self, estrategia, balance):
@@ -33,7 +33,7 @@ class Backtester:
                     "fecha": dato["fecha"],
                     "precio_compra": self.precio_compra,
                     "precio_venta": precio_hoy,
-                    "resultado": ganancia_perdida
+                    "resultado": round(ganancia_perdida, 1)
                 })
                 self.precio_compra = None
 

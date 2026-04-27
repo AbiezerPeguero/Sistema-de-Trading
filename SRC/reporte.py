@@ -1,5 +1,6 @@
 """Recibir el historial y el balance final, y mostrar los resultados. No calcula nada, solo presenta."""
-from SRC import decoradores
+from src import decoradores
+from src.metrics import Metrics
 
 class Reporte:
     def __init__(self, historial, balance_inicial, balance_final):
@@ -8,6 +9,7 @@ class Reporte:
         self.historial = historial
         self.balance_inicial = balance_inicial
         self.balance_final = balance_final
+        self.metrics = Metrics(self.historial)
         
     @decoradores.log_operacion # Imprime en consola cuando el reporte comienza y termina.
     def mostrar_resultados(self):
@@ -33,3 +35,9 @@ class Reporte:
             print(f"Win rate: {sum(1 for op in self.historial if op['resultado'] > 0) / len(self.historial) * 100:.2f}%")
         else:
             print("Win rate: sin operaciones realizadas")
+            
+        # Seccion de metricas avanzadas mostrando cada clave del diccionario
+        print("\n--- Metricas Avanzadas ---")
+        metricas = self.metrics.resumen(self.balance_inicial, self.balance_final)
+        for clave, valor in metricas.items():
+            print(f"{clave}: {valor}")
