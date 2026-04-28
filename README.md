@@ -307,4 +307,6 @@ Enfocado en el desarrollo de sistemas aplicados al trading algorítmico y la cie
 Este proyecto es parte de un camino hacia la construcción de herramientas que conecten
 ingeniería de software con análisis financiero cuantitativo.
 
+Para documentación técnica interna ver [ARCHITECTURE.md](ARCHITECTURE.md)
+
 [![GitHub](https://img.shields.io/badge/GitHub-AbiezerPeguero-181717?style=flat&logo=github)](https://github.com/AbiezerPeguero/Sistema-de-Trading)
