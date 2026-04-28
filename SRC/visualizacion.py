@@ -52,11 +52,15 @@ class Visualizacion:
         compras = [datos["precio_compra"] for datos in self.historial]
         ventas = [datos["precio_venta"] for datos in self.historial]
         
+        fecha_a_indice = {datos["fecha"]: i for i, datos in enumerate(self.datos)}
+        indices_compras = [fecha_a_indice[op["fecha"]] for op in self.historial]
+        indices_ventas = [fecha_a_indice[op["fecha"]] for op in self.historial]
+        
         # Crear figura con plt
         plt.figure(figsize=(12, 5))
         plt.plot(cierre, label="Precios")
-        plt.scatter(range(len(compras)), compras, color='green', label="Compras")
-        plt.scatter(range(len(ventas)), ventas , color='red', label="Ventas")
+        plt.scatter(indices_compras, compras, color='green', label="Compras")
+        plt.scatter(indices_ventas, ventas, color='red', label="Ventas")
         plt.xlabel("Tiempo")
         plt.ylabel("Precio")
         plt.title("Precios Semanales")
