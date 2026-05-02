@@ -127,6 +127,14 @@ Si alguien intenta crear una estrategia sin ese método, Python lanza un `TypeEr
 
 ---
 
+### `src/__init__.py`
+
+**Responsabilidad:** Vacío intencionalmente. Su presencia convierte `src/` en un paquete Python
+y habilita los imports con prefijo `src.` en todo el sistema, como `from src.backtester import Backtester`.
+Sin este archivo, todos los imports del proyecto fallarían.
+
+---
+
 ### `src/strategies/*.py` — Estrategias concretas
 
 **Responsabilidad:** Analizar cada precio y emitir una señal. Nada más.
