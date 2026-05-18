@@ -25,7 +25,7 @@ class Optimizer:
             estrategia = self.estrategia_clase(**params)
             
         # Creando un Backtester con la instancia y con self.balance_inicial
-            backtester = Backtester( estrategia, config.BALANCE_INICIAL)
+            backtester = Backtester( estrategia, self.balance_inicial)
             backtester.ejecutar(self.datos)
         
             metrics = Metrics(backtester.historial)

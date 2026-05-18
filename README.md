@@ -23,9 +23,14 @@ responsabilidades separadas y componentes reutilizables, simulando cómo se estr
 Cada módulo aplica principios SOLID, en especial el Principio de Responsabilidad Única:
 ningún archivo hace más de una cosa.
 
+En su segunda fase, el sistema evolucionó hacia una **plataforma interactiva con Streamlit**,
+agregando una capa de presentación completa sin modificar ningún archivo del núcleo original.
+
 ---
 
 ## ⚙️ ¿Cómo funciona?
+
+**Modo consola:**
 
 ```
 Datos históricos (CSV local o Yahoo Finance)
@@ -47,24 +52,40 @@ Datos históricos (CSV local o Yahoo Finance)
     Optimizer → prueba todas las combinaciones de parámetros y guarda el ranking
 ```
 
+**Modo Streamlit:**
+
+```
+Usuario configura ticker, estrategia y parámetros en el sidebar
+            ↓
+    StrategyConfig → provee los parámetros configurables de cada estrategia
+            ↓
+    BacktestRunner → orquesta la descarga de datos, crea la estrategia y ejecuta el backtest
+            ↓
+    Charts → genera gráficos interactivos con Plotly
+            ↓
+    Streamlit → renderiza métricas, gráficos e historial en el navegador
+```
+
 ---
 
 ## 📈 Estrategias disponibles
 
-| Estrategia         | Clave en config | Descripción                                                         |
-| ------------------ | --------------- | ------------------------------------------------------------------- |
-| Media Móvil Simple | `MediaMovil`    | Compra si el precio sube respecto al día anterior, vende si baja    |
-| Breakout           | `Breakout`      | Compra si el precio supera un umbral fijo, vende si está por debajo |
-| SMA Crossover      | `SmaCrossover`  | Compra cuando la SMA rápida cruza por encima de la SMA lenta        |
-| RSI                | `Rsi`           | Compra en zona de sobrevendido (<30), vende en sobrecomprado (>70)  |
-| Bollinger Breakout | `Bollinger`     | Opera cuando el precio rompe las bandas de Bollinger                |
-| MACD Crossover     | `MACD`          | Compra cuando la MACD line cruza por encima de la signal line       |
+| Estrategia         | Clave          | Descripción                                                         |
+| ------------------ | -------------- | ------------------------------------------------------------------- |
+| Media Móvil Simple | `MediaMovil`   | Compra si el precio sube respecto al día anterior, vende si baja    |
+| Breakout           | `Breakout`     | Compra si el precio supera un umbral fijo, vende si está por debajo |
+| SMA Crossover      | `SmaCrossover` | Compra cuando la SMA rápida cruza por encima de la SMA lenta        |
+| RSI                | `Rsi`          | Compra en zona de sobrevendido (<30), vende en sobrecomprado (>70)  |
+| Bollinger Breakout | `Bollinger`    | Opera cuando el precio rompe las bandas de Bollinger                |
+| MACD Crossover     | `MACD`         | Compra cuando la MACD line cruza por encima de la signal line       |
 
-Para cambiar de estrategia, modifica `ESTRATEGIA` en `config.py`:
+**Modo consola** — modifica `ESTRATEGIA` en `config.py`:
 
 ```python
 ESTRATEGIA = "SmaCrossover"  # Cambia por cualquier clave de la tabla
 ```
+
+**Modo Streamlit** — selecciona la estrategia directamente desde el sidebar de la interfaz.
 
 ---
 
@@ -86,7 +107,7 @@ El sistema calcula automáticamente las siguientes métricas tras cada simulaci�
 
 ## 📉 Visualizaciones
 
-El sistema genera automáticamente 4 gráficos en `output/charts/`:
+**Modo consola** — genera 4 gráficos PNG en `output/charts/`:
 
 **Curva de Capital** — Evolución del balance a lo largo de las operaciones.
 ![Curva de Capital](output/charts/curva_capital.png)
@@ -100,6 +121,9 @@ El sistema genera automáticamente 4 gráficos en `output/charts/`:
 **Drawdown** — Área de caída del balance desde el punto más alto.
 ![Drawdown](output/charts/drawdown.png)
 
+**Modo Streamlit** — los mismos 4 gráficos se muestran de forma interactiva con Plotly
+directamente en el navegador, con zoom, hover y tooltips.
+
 ---
 
 ## 🔧 Optimización de parámetros
@@ -107,7 +131,7 @@ El sistema genera automáticamente 4 gráficos en `output/charts/`:
 El `Optimizer` prueba automáticamente todas las combinaciones posibles de parámetros (Grid Search)
 y guarda el ranking en `output/optimization_results.csv`.
 
-Ejemplo de uso en `main.py`:
+**Modo consola** — ejemplo de uso en `main.py`:
 
 ```python
 optimizer = Optimizer(
@@ -122,21 +146,16 @@ optimizer = Optimizer(
 optimizer.optimizar()
 ```
 
-Resultado en `optimization_results.csv`:
-
-```
-params,retorno_porcentual,win_rate
-"{'periodo_corto': 2, 'periodo_largo': 5}",0.43,0.67
-"{'periodo_corto': 2, 'periodo_largo': 4}",0.10,0.50
-"{'periodo_corto': 3, 'periodo_largo': 10}",0.08,1.00
-...
-```
+**Modo Streamlit** — desde la página de Optimización el usuario define mínimo, máximo y paso
+por cada parámetro, y el sistema ejecuta el grid search mostrando el ranking como tabla interactiva.
 
 ---
 
 ## 🧱 Arquitectura del sistema
 
-El sistema aplica el **Principio de Responsabilidad Única** en cada módulo:
+El sistema aplica el **Principio de Responsabilidad Única** en cada módulo.
+
+### Núcleo (`src/`)
 
 | Módulo                   | Responsabilidad                                                             |
 | ------------------------ | --------------------------------------------------------------------------- |
@@ -145,13 +164,29 @@ El sistema aplica el **Principio de Responsabilidad Única** en cada módulo:
 | `data_fetcher.py`        | Descarga datos reales desde Yahoo Finance con el mismo formato              |
 | `strategies/__init__.py` | Define la clase abstracta `Estrategia` con el contrato obligatorio          |
 | `strategies/*.py`        | Cada estrategia en su propio archivo. Solo analiza precios y emite señales  |
-| `strategy_factory.py`    | Decide qué estrategia instanciar según la configuración                     |
+| `strategy_factory.py`    | Decide qué estrategia instanciar según la configuración (modo consola)      |
 | `backtester.py`          | Simula las operaciones y registra el historial                              |
 | `metrics.py`             | Calcula todas las métricas de rendimiento. No imprime nada                  |
 | `reporte.py`             | Presenta los resultados en consola. No calcula nada                         |
-| `visualizacion.py`       | Genera los 4 gráficos. No calcula métricas ni imprime texto                 |
+| `visualizacion.py`       | Genera los 4 gráficos PNG. No calcula métricas ni imprime texto             |
 | `optimizer.py`           | Prueba combinaciones de parámetros y guarda el ranking en CSV               |
 | `decoradores.py`         | Herramientas transversales: logging y medición de tiempo                    |
+
+### Capa de presentación (`app/`)
+
+| Módulo               | Responsabilidad                                                                      |
+| -------------------- | ------------------------------------------------------------------------------------ |
+| `strategy_config.py` | Catálogo de parámetros configurables por estrategia (min, max, default, tipo, label) |
+| `runner.py`          | Orquesta la ejecución completa del backtest y devuelve un diccionario de resultados  |
+| `charts.py`          | Convierte los resultados del runner en figuras interactivas de Plotly                |
+
+### Páginas Streamlit (`pages/`)
+
+| Página              | Responsabilidad                                                                 |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `1_backtest.py`     | Configuración interactiva, ejecución del backtest y visualización de resultados |
+| `2_optimizacion.py` | Grid search interactivo con ranking de combinaciones de parámetros              |
+| `3_historial.py`    | Tabla navegable del historial completo de operaciones                           |
 
 ### Decisiones de diseño
 
@@ -168,7 +203,16 @@ En lugar de repetir lógica de logging y medición en cada función,
 se encapsuló en decoradores reutilizables que se aplican con una sola línea.
 
 **Factory Pattern en `strategy_factory.py`**
-Ningún otro archivo decide qué estrategia usar. Toda esa lógica vive en un solo lugar.
+Ningún otro archivo del núcleo decide qué estrategia usar en modo consola.
+Toda esa lógica vive en un solo lugar.
+
+**Capa de presentación desacoplada**
+`app/` y `pages/` conocen el núcleo pero el núcleo no sabe que Streamlit existe.
+Esto permite usar el sistema desde consola o desde la interfaz web sin modificar ningún archivo compartido.
+
+**`session_state` para persistencia entre páginas**
+El resultado del backtest se guarda en `st.session_state` desde `1_backtest.py`
+para que `3_historial.py` pueda acceder a él sin volver a ejecutar el backtest.
 
 ---
 
@@ -176,11 +220,20 @@ Ningún otro archivo decide qué estrategia usar. Toda esa lógica vive en un so
 
 ```
 Backtesting/
+├── app/                          ← Capa de presentación (nueva)
+│   ├── __init__.py
+│   ├── strategy_config.py        ← Catálogo de parámetros por estrategia
+│   ├── runner.py                 ← Orquestador entre UI y núcleo
+│   └── charts.py                 ← Gráficos interactivos con Plotly
 ├── data/
 │   └── precios.csv
-├── src/
+├── pages/                        ← Páginas de Streamlit (nueva)
+│   ├── 1_backtest.py             ← Configuración y ejecución interactiva
+│   ├── 2_optimizacion.py         ← Grid search con ranking de resultados
+│   └── 3_historial.py            ← Tabla de historial de operaciones
+├── src/                          ← Núcleo del sistema (sin modificaciones)
 │   ├── strategies/
-│   │   ├── __init__.py          ← clase abstracta Estrategia
+│   │   ├── __init__.py           ← Clase abstracta Estrategia
 │   │   ├── media_movil.py
 │   │   ├── breakout.py
 │   │   ├── sma_crossover.py
@@ -210,6 +263,7 @@ Backtesting/
 ├── conftest.py
 ├── config.py
 ├── main.py
+├── streamlit_app.py              ← Punto de entrada de la interfaz web (nuevo)
 └── README.md
 ```
 
@@ -217,33 +271,51 @@ Backtesting/
 
 ## 🛠️ Tecnologías utilizadas
 
-| Tecnología                                               | Uso                                 |
-| -------------------------------------------------------- | ----------------------------------- |
-| Python 3.14                                              | Lenguaje principal                  |
-| `matplotlib`                                             | Generación de gráficos              |
-| `yfinance`                                               | Descarga de datos históricos reales |
-| `pytest`                                                 | Testing unitario                    |
-| `csv`, `itertools`, `statistics`, `argparse`, `tempfile` | Librería estándar de Python         |
+| Tecnología                                               | Uso                                       |
+| -------------------------------------------------------- | ----------------------------------------- |
+| Python 3.14                                              | Lenguaje principal                        |
+| `streamlit`                                              | Interfaz web interactiva                  |
+| `plotly`                                                 | Gráficos interactivos en la interfaz web  |
+| `pandas`                                                 | Conversión de historial a tabla navegable |
+| `matplotlib`                                             | Generación de gráficos PNG (modo consola) |
+| `yfinance`                                               | Descarga de datos históricos reales       |
+| `pytest`                                                 | Testing unitario                          |
+| `csv`, `itertools`, `statistics`, `argparse`, `tempfile` | Librería estándar de Python               |
 
 ---
 
 ## ▶️ Cómo ejecutarlo
 
-**Con datos locales (CSV):**
+**Interfaz web con Streamlit (recomendado):**
+
+```bash
+streamlit run Backtesting/streamlit_app.py
+```
+
+O desde dentro de la carpeta `Backtesting/`:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+Esto abre la aplicación en el navegador en `http://localhost:8501`.
+Desde ahí puedes configurar ticker, estrategia, parámetros y período directamente desde la UI.
+
+---
+
+**Modo consola con datos locales (CSV):**
 
 ```bash
 python Backtesting/main.py
 ```
 
-**Con datos reales de Yahoo Finance:**
+**Modo consola con datos reales de Yahoo Finance:**
 
 ```bash
 python Backtesting/main.py --ticker AAPL
 python Backtesting/main.py --ticker BTC-USD
 python Backtesting/main.py --ticker MSFT
 ```
-
-El ticker puede ser cualquier símbolo válido de Yahoo Finance — acciones, ETFs, criptomonedas, índices.
 
 **Ejecutar los tests:**
 
@@ -254,12 +326,12 @@ pytest Backtesting/tests/ -v
 **Instalar dependencias:**
 
 ```bash
-pip install matplotlib yfinance pytest
+pip install matplotlib yfinance pytest streamlit plotly pandas
 ```
 
 ---
 
-## 📦 Ejemplo de salida
+## 📦 Ejemplo de salida (consola)
 
 ```
 La funcion tardó 0.0001 segundos
@@ -293,9 +365,9 @@ La operacion finalizo
 - Conectar con APIs adicionales: Binance, Alpha Vantage
 - Implementar EMA real en lugar de SMA aproximada para MACD
 - Agregar ratio de Sharpe como métrica de riesgo ajustado
-- Interfaz web con Flask o Streamlit para visualizar resultados en el navegador
 - Backtesting con múltiples activos simultáneos
-- Exportar reporte completo a PDF
+- Exportar reporte completo a PDF desde la interfaz Streamlit
+- Agregar autenticación para despliegue en Streamlit Cloud
 
 ---
 
